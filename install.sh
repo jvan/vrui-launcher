@@ -3,8 +3,19 @@
 # Install script for VruiLauncher program.
 #
 
-source root-check.sh
-source term-colors.sh
+if [[ $EUID -ne 0 ]]; then
+   echo "You must be root to run this script."
+   exit 1
+fi
+
+type "term-colors.sh" &>/dev/null
+if [[ $? -eq 0 ]]; then
+   source term-colors.sh
+else
+   status () {
+      echo "$2"
+   }
+fi
 
 ROOTDIR=`dirname $0`
 
