@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+   <schema id="apps.vrui-launcher" path="/apps/vrui-launcher/">
+
+      <key type="s" name="display-mode">
+         <default>"3d-1080p"</default>
+         <summary>Display mode</summary>
+         <description>VRUI display mode</description>
+      </key>
+
+      <key type="b" name="hydra-enabled">
+         <default>false</default>
+         <summary>Razer Hydra support</summary>
+         <description>Enable support for Razer Hyrda controller</description>
+      </key>
+
+      <key type="b" name="head-tracking">
+         <default>false</default>
+         <summary>Head-tracking support</summary>
+         <description>Enable support for head-tracking using Microsoft Kinect</description>
+      </key>
+
+      <key type="b" name="fullscreen">
+         <default>true</default>
+         <summary>Fullscreen mode</summary>
+         <description>Run VRUI applications in fullscreen mode</description>
+      </key>
+
+      <key type="s" name="display-id">
+         <default>":1.0"</default>
+         <summary>Display ID</summary>
+         <description>Display ID</description>
+      </key>
+
+      <key type="s" name="background-color">
+         <default>"(0.0, 0.0, 0.0)"</default>
+         <summary>Background color</summary>
+         <description>Background for VRUI applications</description>
+      </key>
+
+      <key type="d" name="glyph-size">
+         <default>2.0</default>
+         <summary>Glyph Size</summary>
+         <description>VRUI glyph size</description>
+      </key>
+
+      <key type="d" name="ui-size">
+         <default>0.22</default>
+         <summary>UI size</summary>
+         <description></description>
+      </key>
+
+      <key type="d" name="ui-font-text-height">
+         <default>0.45</default>
+         <summary>UI font text height</summary>
+         <description></description>
+      </key>
+
+      <key type="s" name="font-name">
+         <default>"HelveticaMediumUpright12"</default>
+         <summary>Font name</summary>
+         <description></description>
+      </key>
+
+   </schema>
+</schemalist>

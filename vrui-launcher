@@ -1,0 +1,132 @@
+#!/bin/bash
+#
+# NAME: vrui-launcher PROGRAM [OPTIONS]
+#
+# OPTIONS:
+#    PROGRAM
+#       Name of the VRUI program to be run
+#
+#    OPTIONS
+#       Additional program specific options
+#
+# DESCRIPTION:
+#   Launcher program for VRUI applications. 
+#
+#   The vrui-launcher utility provides a uniform method for running VRUI 
+#   applications across diverse systems. Configuration file fragments are 
+#   merged together based on the values specified in the local GSettings
+#   database.
+#   
+
+############################################################
+# Global Variables 
+#
+############################################################
+FRAGMENT_DIR=/usr/local/share/vrui-launcher/fragments
+USER_FRAGMENT_DIR=$HOME/.vruilauncher/fragments
+
+############################################################
+# Functions
+#
+############################################################
+
+get_value() {
+   # Retrieve a value from the GSettings database
+   gsettings get apps.vrui-launcher $1 | sed "s/'//g"
+}
+
+get_fragments() {
+   # Return a list of all configuration files 
+
+   local fragments=()
+
+   # Check for generated config fragments
+   if [[ -e $USER_FRAGMENT_DIR/desktop.conf ]]; then
+      fragments+=("$USER_FRAGMENT_DIR/desktop.conf")
+   else
+      fragments+=("$FRAGMENT_DIR/desktop.conf")
+   fi
+   if [[ -e $USER_FRAGMENT_DIR/window.conf ]]; then
+      fragments+=("$USER_FRAGMENT_DIR/window.conf")
+   else
+      fragments+=("$FRAGMENT_DIR/window.conf")
+   fi
+ 
+   # Get the specified display mode fragment 
+   display_fragment=$FRAGMENT_DIR/${DISPLAY_MODE}.conf
+   fragments+=("$display_fragment")
+   
+   # Optional settings
+   if [[ $HYDRA_ENABLED == true ]]; then
+      fragments+=("$FRAGMENT_DIR/razer-hydra.conf")
+   fi
+   if [[ $HEAD_TRACKED == true ]]; then
+      fragments+=("$FRAGMENT_DIR/head-tracking.conf")
+   fi
+
+   echo "${fragments[*]}"
+}       
+   
+generate_command() {
+   # Create command line string to run the program
+
+   command=$1; shift
+   fragment_count=$1; shift;
+   fragments=(${@:1:$fragment_count})
+   options=${!#}
+ 
+   for frag in ${fragments[@]}
+   do
+      command+=" -mergeConfig $frag"
+   done
+   if [[ "$options" != "" ]]; then
+      command+=" $options"
+   fi
+   echo "$command"
+}
+
+############################################################
+# Main Program
+#
+############################################################
+
+# Get VRUI settings 
+DISPLAY_MODE=`get_value display-mode`
+HYDRA_ENABLED=`get_value hydra-enabled`
+HEAD_TRACKED=`get_value head-tracking`
+
+PROGRAM=$1; shift;
+OPTIONS=$*
+
+FRAGMENTS=($(get_fragments))
+COMMAND=$(generate_command $PROGRAM ${#FRAGMENTS[@]} ${FRAGMENTS[@]} "$OPTIONS")
+
+echo "############################################################"
+echo "  vrui-launcher"
+echo
+
+# Print VRUI settings
+echo "  -- DISPLAY_MODE=$DISPLAY_MODE"
+echo "  -- HYDRA_ENABLED=$HYDRA_ENABLED"
+echo "  -- HEAD_TRACKED=$HEAD_TRACKED"
+
+# Print program name and options
+echo
+echo "  -- PROGRAM=$PROGRAM"
+echo "  -- OPTIONS=$OPTIONS"
+
+echo
+echo "  merging ${#FRAGMENTS[@]} fragments"
+for frag in ${FRAGMENTS[@]}
+do
+   echo "    ---- $frag"
+done
+
+echo
+echo "Run Command:"
+echo "<$COMMAND>"
+
+#../vrui-desktop-launcher --display :1.0 $COMMAND
+VRUI_CONFIGFILE=/dev/null $COMMAND
+
+echo "############################################################"

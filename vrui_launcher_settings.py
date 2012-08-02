@@ -1,0 +1,197 @@
+#!/usr/bin/env python
+
+from gi.repository import Gtk, Gio
+from vruilauncher.widgets import *
+from mako.template import Template
+import os
+
+class App(object):
+   BASE_KEY = 'apps.vrui-launcher'
+
+   DisplayModes = [
+      '3d-1080p',
+      '3d-over-under',
+      '3d-side-by-side',
+      '3d-anaglyph',
+      '2d'
+   ]
+
+   USER_FRAGMENT_DIR = os.path.expanduser('~/.vruilauncher/fragments')
+   TEMPLATE_DIR = '/usr/local/share/vrui-launcher/templates'
+
+   def __init__(self):
+      
+      # gsettings object
+      self.settings = Gio.Settings.new(App.BASE_KEY)
+
+      if not os.path.exists(App.USER_FRAGMENT_DIR):
+         os.makedirs(App.USER_FRAGMENT_DIR)
+
+      # main window
+      window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+      window.set_title('VRUI Launcher Settings')
+      window.set_border_width(10)
+
+      grid = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL)
+      grid.add(self._create_display_options_frame())
+      grid.add(self._create_additional_options_frame())
+      grid.add(self._create_desktop_options_frame())
+      grid.add(self._create_bottom_buttons())
+
+      window.connect_after('destroy', self.on_window_destroy)
+      window.add(grid)
+      window.show_all()
+      Gtk.main()
+
+   def on_window_destroy(self, widget, data=None):
+      Gtk.main_quit()
+
+   def select_background_color(self, widget, entry):
+      dialog = Gtk.ColorSelectionDialog()
+      response = dialog.run()
+      if response == Gtk.ResponseType.OK:
+         selection = dialog.get_color_selection()
+         color = selection.get_current_color()
+         (r, g, b) = map(lambda x: float(x)/65535.0, (color.red, color.green, color.blue))
+         print('({}, {}, {})'.format(r, g, b))
+         entry.set_text('({:.2f}, {:.2f}, {:.2f})'.format(r, g, b))
+      dialog.hide()
+
+   def save_settings(self, widget, data=None):
+      print('(save_settings)')
+      #window_template = Template(filename='templates/window.conf')
+      window_template = Template(filename=os.path.join(App.TEMPLATE_DIR, 'window.conf'))
+      #screen_size = self.settings.get_int('screen-size')
+      screen_size = 55
+      display_id = self.settings.get_string('display-id')
+      #print('   (screen_size={}, display_id={})'.format(screen_size, display_id))
+      conf = window_template.render(screen_size=screen_size, display_id=display_id)
+
+      print conf
+      print 
+
+      open(os.path.join(App.USER_FRAGMENT_DIR, 'window.conf'), 'w').write(conf)
+
+      #desktop_template = Template(filename='templates/desktop.conf')
+      desktop_template = Template(filename=os.path.join(App.TEMPLATE_DIR, 'desktop.conf'))
+      
+      glyph_size          = self.settings.get_double('glyph-size')
+      background_color    = self.settings.get_string('background-color')
+      ui_size             = self.settings.get_double('ui-size')
+      ui_font_text_height = self.settings.get_double('ui-font-text-height')
+      ui_font_name        = self.settings.get_string('font-name')
+
+      conf = desktop_template.render(glyph_size=glyph_size,
+                                    background_color=background_color,
+                                    ui_size=ui_size,
+                                    ui_font_text_height=ui_font_text_height,
+                                    ui_font_name=ui_font_name)
+      print conf 
+
+      open(os.path.join(App.USER_FRAGMENT_DIR, 'desktop.conf'), 'w').write(conf)
+      
+
+   def _create_display_options_frame(self):
+      frame = Gtk.Frame(label='Display Options')
+      grid = Gtk.Table(3, 2)
+      
+      label = Gtk.Label('Display Mode')
+      combobox = ComboBoxText(App.DisplayModes, self.settings, 'display-mode')
+      grid.attach(label,    0, 1, 0, 1)
+      grid.attach(combobox, 1, 2, 0, 1)
+
+      label = Gtk.Label('Display ID')
+      entry = Entry(self.settings, 'display-id')
+      grid.attach(label, 0, 1, 1, 2)
+      grid.attach(entry, 1, 2, 1, 2)
+
+      check_button = CheckButton('Fullscreen', self.settings, 'fullscreen')
+      grid.attach(check_button, 0, 2, 2, 3)
+
+      frame.add(grid)
+      return frame
+
+   def _create_additional_options_frame(self):
+      frame = Gtk.Frame(label='Additional Options')
+      button_box = Gtk.VButtonBox()
+
+      button_box.add(CheckButton('Hydra Support', self.settings, 'hydra-enabled'))
+      button_box.add(CheckButton('Head Tracking', self.settings, 'head-tracking'))
+
+      frame.add(button_box)
+      return frame
+
+   def _create_desktop_options_frame(self):
+      frame = Gtk.Frame(label='Desktop Options')
+
+      grid = Gtk.Table(5, 2)
+
+      label = Gtk.Label('Glyph Size')
+      spin_button = SpinButton(self.settings, 'glyph-size', max=5.0)
+      grid.attach(label, 0, 1, 0, 1)
+      grid.attach(spin_button, 1, 2, 0, 1)
+
+      label = Gtk.Label('Background Color')
+      grid.attach(label, 0, 1, 1, 2)
+
+      subgrid = Gtk.Grid()
+
+      entry = Entry(self.settings, 'background-color')
+      
+      button = Gtk.Button()
+      image = Gtk.Image()
+      image.set_from_stock(Gtk.STOCK_SELECT_COLOR, Gtk.IconSize.BUTTON)
+      button.set_image(image)
+      button.connect('clicked', self.select_background_color, entry)
+
+      subgrid.add(entry)
+      subgrid.add(button)
+      grid.attach(subgrid, 1, 2, 1, 2)
+
+      label = Gtk.Label('UI Size')
+      spin_button = SpinButton(self.settings, 'ui-size', max=1.0, step=0.01)
+      spin_button.set_digits(2)
+      grid.attach(label, 0, 1, 2, 3)
+      grid.attach(spin_button, 1, 2, 2, 3)
+      
+      label = Gtk.Label('UI Font Text Height')
+      spin_button = SpinButton(self.settings, 'ui-font-text-height', max=1.0, step=0.01)
+      spin_button.set_digits(2)
+      grid.attach(label, 0, 1, 3, 4)
+      grid.attach(spin_button, 1, 2, 3, 4)
+      
+      label = Gtk.Label('UI Font Name')
+      
+      #font_dir = '/usr/share/Vrui/GLFonts'
+      font_dir = '/opt/Vrui/share/GLFonts'
+      fonts = [os.path.splitext(x)[0] for x in os.listdir(font_dir)]
+      fonts.sort()
+
+      combobox = ComboBoxText(fonts, self.settings, 'font-name')
+      grid.attach(label, 0, 1, 4, 5)
+      grid.attach(combobox, 1, 2, 4, 5)
+
+      frame.add(grid)
+      return frame
+
+   def _create_bottom_buttons(self):
+      grid = Gtk.Grid()
+      save_button = Gtk.Button()
+      #save_button = Gtk.Button(stock=Gtk.STOCK_SAVE)
+      save_button.connect('clicked', self.save_settings)
+
+      #image = Gtk.Image()
+      #image.set_from_stock(Gtk.STOCK_SAVE, Gtk.IconSize.BUTTON)
+      #save_button.set_image(image)
+      save_button.set_label('Save')
+
+      #quit_button = Gtk.Button('Quit')
+      quit_button = Gtk.Button(stock=Gtk.STOCK_QUIT)
+      quit_button.connect('clicked', self.on_window_destroy)
+
+      grid.add(save_button)
+      grid.add(quit_button)
+      return grid
+
+if __name__ == '__main__':
+   app = App()

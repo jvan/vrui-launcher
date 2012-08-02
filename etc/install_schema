@@ -1,0 +1,16 @@
+#!/bin/bash
+SCHEMA_DIR=/usr/share/glib-2.0/schemas
+
+install_and_compile() {
+   echo "-- installing gsettings schema"
+   cp apps.vrui-launcher.gschema.xml $SCHEMA_DIR
+   glib-compile-schemas $SCHEMA_DIR
+}
+
+if [[ ! -e $SCHEMA_DIR/apps.vrui-launcher.gschema.xml ]]; then
+   `install_and_compile`
+elif [[ $(diff apps.vrui-launcher.gschema.xml $SCHEMA_DIR/apps.vrui-launcher.gschema.xml) != "" ]]; then 
+   `install_and_compile`
+else
+   echo "-- schema is already installed and up-to-date."
+fi
