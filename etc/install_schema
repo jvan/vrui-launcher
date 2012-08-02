@@ -8,9 +8,9 @@ install_and_compile() {
 }
 
 if [[ ! -e $SCHEMA_DIR/apps.vrui-launcher.gschema.xml ]]; then
-   `install_and_compile`
+   install_and_compile
 elif [[ $(diff apps.vrui-launcher.gschema.xml $SCHEMA_DIR/apps.vrui-launcher.gschema.xml) != "" ]]; then 
-   `install_and_compile`
+   install_and_compile
 else
    echo "-- schema is already installed and up-to-date."
 fi
