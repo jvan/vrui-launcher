@@ -162,8 +162,7 @@ class App(object):
       
       label = Gtk.Label('UI Font Name')
       
-      #font_dir = '/usr/share/Vrui/GLFonts'
-      font_dir = '/opt/Vrui/share/GLFonts'
+      font_dir = '/usr/share/Vrui-2.7/GLFonts'
       fonts = [os.path.splitext(x)[0] for x in os.listdir(font_dir)]
       fonts.sort()
 
