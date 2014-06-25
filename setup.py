@@ -7,7 +7,7 @@ template_files = list_files('templates')
 fragment_files = list_files('fragments')
 
 setup(
-      name = 'vrui launcher',
+      name = 'vrui-launcher',
       version = '0.0.1',
       author = 'Jordan Van Aalsburg',
       author_email = 'jvan@cse.ucdavis.edu',
@@ -16,9 +16,9 @@ setup(
       packages = [ 'vruilauncher', 'vruilauncher.widgets' ],
       scripts = [ 'vrui-launcher', 'vrui-launcher-settings' ],
       data_files = [ 
-               ('/usr/local/share/vrui-launcher/templates', template_files),
-               ('/usr/local/share/vrui-launcher/fragments', fragment_files),
-               ('/usr/share/glib-2.0/schemas', ['etc/apps.vrui-launcher.gschema.xml'])
-                   ]
+          ('/usr/share/vrui-launcher/templates', template_files),
+          ('/usr/share/vrui-launcher/fragments', fragment_files),
+          ('/usr/share/glib-2.0/schemas', ['etc/apps.vrui-launcher.gschema.xml'])
+          ]
 )
-                     
+
