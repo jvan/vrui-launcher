@@ -10,8 +10,8 @@ setup(
       name = 'vrui-launcher',
       version = '0.0.1',
       author = 'Jordan Van Aalsburg',
-      author_email = 'jvan@cse.ucdavis.edu',
-      url = 'http://iviz.csc.ucdavis.edu',
+      author_email = 'iviz@lists.cse.ucdavis.edu',
+      url = 'https://github.com/comscictr/vrui-launcher',
       description = 'Launcher utility for VRUI applications',
       packages = [ 'vruilauncher', 'vruilauncher.widgets' ],
       scripts = [ 'vrui-launcher', 'vrui-launcher-settings' ],
@@ -19,6 +19,6 @@ setup(
           ('/usr/share/vrui-launcher/templates', template_files),
           ('/usr/share/vrui-launcher/fragments', fragment_files),
           ('/usr/share/glib-2.0/schemas', ['etc/apps.vrui-launcher.gschema.xml'])
-          ]
+      ]
 )
 
